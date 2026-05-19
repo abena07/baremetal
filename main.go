@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net"
@@ -19,7 +20,20 @@ func main() {
 			log.Println(err)
 			continue
 		}
-		fmt.Println(conn)
+		reader := bufio.NewReader(conn)
+		for {
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				break
+			}
+			fmt.Print(line)
+
+			conn.Write([]byte(line))
+
+			if line == "\r\n" {
+				break
+			}
+		}
 		conn.Close()
 	}
 }
