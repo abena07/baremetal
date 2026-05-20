@@ -8,6 +8,10 @@ import (
 )
 
 func handleConn(conn net.Conn) {
+	addr := conn.RemoteAddr().String()
+
+	log.Printf("connect: %s", addr)
+	defer log.Printf("disconnect: %s", addr)
 	defer conn.Close()
 
 	reader := bufio.NewReader(conn)
