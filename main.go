@@ -7,6 +7,26 @@ import (
 	"net"
 )
 
+func handleConn(conn net.Conn) {
+	defer conn.Close()
+
+	reader := bufio.NewReader(conn)
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			break
+		}
+		fmt.Print(line)
+
+		conn.Write([]byte(line))
+
+		if line == "\r\n" {
+			break
+		}
+	}
+	conn.Close()
+}
+
 func main() {
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
@@ -20,20 +40,8 @@ func main() {
 			log.Println(err)
 			continue
 		}
-		reader := bufio.NewReader(conn)
-		for {
-			line, err := reader.ReadString('\n')
-			if err != nil {
-				break
-			}
-			fmt.Print(line)
 
-			conn.Write([]byte(line))
+		go handleConn(conn)
 
-			if line == "\r\n" {
-				break
-			}
-		}
-		conn.Close()
 	}
 }
