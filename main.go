@@ -2,9 +2,12 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"os/signal"
 )
 
 func handleConn(conn net.Conn) {
@@ -28,7 +31,6 @@ func handleConn(conn net.Conn) {
 			break
 		}
 	}
-	conn.Close()
 }
 
 func main() {
@@ -38,14 +40,21 @@ func main() {
 	}
 	fmt.Println("listening on :8080")
 
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	go func() {
+		<-ctx.Done()
+		fmt.Println("\nreceived interrupt, closing listener......")
+		listener.Close()
+	}()
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
 			log.Println(err)
-			continue
+			break
 		}
-
 		go handleConn(conn)
-
 	}
 }
