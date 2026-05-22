@@ -31,7 +31,6 @@ func handleConn(conn net.Conn) {
 			break
 		}
 	}
-	conn.Close()
 }
 
 func main() {
@@ -54,9 +53,8 @@ func main() {
 		conn, err := listener.Accept()
 		if err != nil {
 			log.Println(err)
-			continue
+			break
 		}
-		fmt.Println(conn)
-		conn.Close()
+		go handleConn(conn)
 	}
 }
