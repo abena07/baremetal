@@ -25,7 +25,13 @@ func handleConn(conn net.Conn) {
 		}
 		fmt.Print(line)
 
-		conn.Write([]byte(line))
+		req, errs := ParseRequest(line)
+
+		if errs != nil {
+			conn.Write([]byte(ResponseErrFormatter(errs.Error())))
+		} else {
+			conn.Write([]byte(ResponseOkFormatter(req.Command, req.Args)))
+		}
 
 		if line == "\r\n" {
 			break
@@ -49,6 +55,13 @@ func main() {
 		listener.Close()
 	}()
 
+	// req, err := ParseRequest("SET|1|adwoa\n")
+	// if err != nil {
+	// 	fmt.Println("error:", err)
+	// } else {
+	// 	fmt.Println("commander:", req.Command, "argser:", req.Args)
+	// }
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -57,4 +70,5 @@ func main() {
 		}
 		go handleConn(conn)
 	}
+
 }
