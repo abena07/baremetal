@@ -27,20 +27,20 @@ ERR|message\n
 
 ## commands
 
-| command | args       | success response   |
-|---------|------------|--------------------|
-| PING    | none       | `OK|PONG`          |
-| SET     | key, value | `OK|`              |
-| GET     | key        | `OK|value`         |
-| DEL     | key        | `OK|`              |
+| command | args       | success response      |
+|---------|------------|-----------------------|
+| PING    | none       | `OK&#124;PONG`        |
+| SET     | key, value | `OK&#124;`            |
+| GET     | key        | `OK&#124;value`       |
+| DEL     | key        | `OK&#124;`            |
 
 
 ## edge cases
 
-| input              | response                                    |
-|--------------------|---------------------------------------------|
-| empty / blank line | `ERR|empty message`                         |
-| unknown command    | `ERR|unknown command: "FOO"`                |
-| missing args       | `ERR|SET requires exactly 2 arguments`      |
-| too many args      | `ERR|PING requires 0 arguments`             |
-| pipe in value      | `ERR|invalid character in value`            |
+| input              | response                                             |
+|--------------------|------------------------------------------------------|
+| empty / blank line | `ERR&#124;empty message`                             |
+| unknown command    | `ERR&#124;unknown command: "FOO"`                    |
+| missing args       | `ERR&#124;SET requires exactly 2 arguments`          |
+| too many args      | `ERR&#124;PING requires 0 arguments`                 |
+| pipe in value      | `ERR&#124;invalid character in value`                |
