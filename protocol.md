@@ -32,6 +32,8 @@ ERR|message\n
 | PING    | none       | `OK|PONG`          |
 | SET     | key, value | `OK|`              |
 | GET     | key        | `OK|value`         |
+| DEL     | key        | `OK|`         |
+
 
 ## edge cases
 

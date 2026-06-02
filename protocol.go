@@ -12,12 +12,23 @@ type Request struct {
 }
 
 func ParseRequest(input string) (Request, error) {
-	commands := []string{"SET", "GET", "PING"}
+	commands := []string{"SET", "GET", "PING", "DEL"}
 
 	formatted_input := strings.TrimRight(input, "\r\n")
-	line := strings.Split(formatted_input, "|")
 
-	fmt.Println("args", line)
+	if strings.Count(formatted_input, "|") > 2 {
+		return Request{}, fmt.Errorf("invalid character in value")
+	}
+
+	raw_line := strings.Split(formatted_input, "|")
+
+	var line []string
+	for _, item := range raw_line {
+		cleaned := strings.TrimSpace(item)
+		if cleaned != "" {
+			line = append(line, cleaned)
+		}
+	}
 
 	if len(line) < 1 {
 		return Request{}, fmt.Errorf("empty message")
@@ -30,8 +41,17 @@ func ParseRequest(input string) (Request, error) {
 		return Request{}, fmt.Errorf("unknown command: %q", command)
 	}
 
-	return Request{Command: command, Args: args}, nil
+	if command == "PING" {
+		if len(args) != 0 {
+			return Request{}, fmt.Errorf("%s requires 0 arguments", command)
+		}
+	} else {
+		if len(args) != 2 {
+			return Request{}, fmt.Errorf("%s requires exactly 2 arguments", command)
+		}
+	}
 
+	return Request{Command: command, Args: args}, nil
 }
 
 func ResponseOkFormatter(command string, values []string) string {
