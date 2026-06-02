@@ -55,13 +55,6 @@ func main() {
 		listener.Close()
 	}()
 
-	// req, err := ParseRequest("SET|1|adwoa\n")
-	// if err != nil {
-	// 	fmt.Println("error:", err)
-	// } else {
-	// 	fmt.Println("commander:", req.Command, "argser:", req.Args)
-	// }
-
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
