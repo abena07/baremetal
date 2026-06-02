@@ -17,25 +17,24 @@ func handleConn(conn net.Conn) {
 	defer log.Printf("disconnect: %s", addr)
 	defer conn.Close()
 
-	reader := bufio.NewReader(conn)
-	for {
-		line, err := reader.ReadString('\n')
+	scanner := bufio.NewScanner(conn)
+	for scanner.Scan() {
+		req, err := ParseRequest(scanner.Text())
 		if err != nil {
-			break
-		}
-		fmt.Print(line)
-
-		req, errs := ParseRequest(line)
-
-		if errs != nil {
-			conn.Write([]byte(ResponseErrFormatter(errs.Error())))
-		} else {
-			conn.Write([]byte(ResponseOkFormatter(req.Command, req.Args)))
+			WriteErr(conn, err.Error())
+			continue
 		}
 
-		if line == "\r\n" {
-			break
+		switch req.Command {
+		case "PING":
+			WriteOK(conn, "PONG")
+		default:
+			WriteOK(conn, "")
 		}
+	}
+
+	if scanErr := scanner.Err(); scanErr != nil {
+		WriteErr(conn, scanErr.Error())
 	}
 }
 
@@ -63,5 +62,4 @@ func main() {
 		}
 		go handleConn(conn)
 	}
-
 }

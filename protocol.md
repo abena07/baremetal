@@ -32,14 +32,15 @@ ERR|message\n
 | PING    | none       | `OK|PONG`          |
 | SET     | key, value | `OK|`              |
 | GET     | key        | `OK|value`         |
-| DEL     | key        | `OK|`         |
+| DEL     | key        | `OK|`              |
 
 
 ## edge cases
 
-| input              | response                           |
-|--------------------|------------------------------------|
-| empty / blank line | `ERR|empty message`                |
-| unknown command    | `ERR|unknown command: FOO`         |
-| missing args       | `ERR|missing args: SET requires 2` |
-| pipe in value      | `ERR|invalid character in value`   |
+| input              | response                                    |
+|--------------------|---------------------------------------------|
+| empty / blank line | `ERR|empty message`                         |
+| unknown command    | `ERR|unknown command: "FOO"`                |
+| missing args       | `ERR|SET requires exactly 2 arguments`      |
+| too many args      | `ERR|PING requires 0 arguments`             |
+| pipe in value      | `ERR|invalid character in value`            |
