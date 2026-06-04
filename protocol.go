@@ -13,8 +13,9 @@ type Request struct {
 }
 
 func ParseRequest(input string) (Request, error) {
-	commands := []string{"SET", "GET", "PING", "DEL"}
+	commands := []string{"SET", "GET", "PING", "DEL", "LIST"}
 	oneArgCommands := []string{"GET", "DEL"}
+	noArgsCommands := []string{"PING", "LIST"}
 
 	if strings.Count(input, "|") > 2 {
 		return Request{}, fmt.Errorf("invalid character in value")
@@ -41,7 +42,7 @@ func ParseRequest(input string) (Request, error) {
 		return Request{}, fmt.Errorf("unknown command: %q", command)
 	}
 
-	if command == "PING" {
+	if slices.Contains(noArgsCommands, command) {
 		if len(args) != 0 {
 			return Request{}, fmt.Errorf("%s requires 0 arguments", command)
 		}
