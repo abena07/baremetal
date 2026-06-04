@@ -8,9 +8,10 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 )
 
-func handleConn(conn net.Conn) {
+func handleConn(conn net.Conn, store *SafeMap) {
 	addr := conn.RemoteAddr().String()
 
 	log.Printf("connect: %s", addr)
@@ -28,8 +29,26 @@ func handleConn(conn net.Conn) {
 		switch req.Command {
 		case "PING":
 			WriteOK(conn, "PONG")
-		default:
+		case "SET":
+			store.Set(req.Args[0], req.Args[1])
 			WriteOK(conn, "")
+		case "GET":
+			val, ok := store.Get(req.Args[0])
+			if !ok {
+				WriteErr(conn, "key not found")
+			} else {
+				WriteOK(conn, val)
+			}
+		case "DEL":
+			_, ok := store.Get(req.Args[0])
+			if !ok {
+				WriteErr(conn, "key not found")
+			} else {
+				store.Delete(req.Args[0])
+				WriteOK(conn, "")
+			}
+		case "LIST":
+			WriteOK(conn, strings.Join(store.List(), "|"))
 		}
 	}
 
@@ -54,12 +73,14 @@ func main() {
 		listener.Close()
 	}()
 
+	store := NewSafeMap()
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
 			log.Println(err)
 			break
 		}
-		go handleConn(conn)
+		go handleConn(conn, store)
 	}
 }
