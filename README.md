@@ -1,7 +1,7 @@
 
 # baremetal
 
-a concurrent tcp server with a custom wire protocol, built from scratch in go
+a concurrent tcp server with a custom wire protocol
 
 ## why
 the sole aim of this project is to understand what powers http servers at the transport layer
