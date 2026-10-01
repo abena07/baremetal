@@ -73,8 +73,27 @@ func TestHandler_List(t *testing.T) {
 	send(t, conn, "SET|a|1")
 	send(t, conn, "SET|b|2")
 	got := send(t, conn, "LIST")
-	if got != "OK|a|b\n" && got != "OK|b|a\n" {
-		t.Errorf("LIST = %q, want OK|a|b or OK|b|a", got)
+	if got != "OK|a|b\n" {
+		t.Errorf("LIST = %q, want %q", got, "OK|a|b\n")
+	}
+}
+
+func TestHandler_ValueWithPipe(t *testing.T) {
+	conn, _ := newTestConn(t)
+	send(t, conn, "SET|k|a|b")
+	got := send(t, conn, "GET|k")
+	if got != "OK|a|b\n" {
+		t.Errorf("GET = %q, want %q", got, "OK|a|b\n")
+	}
+}
+
+func TestHandler_DelTwice(t *testing.T) {
+	conn, _ := newTestConn(t)
+	send(t, conn, "SET|x|1")
+	send(t, conn, "DEL|x")
+	got := send(t, conn, "DEL|x")
+	if got != "ERR|key not found\n" {
+		t.Errorf("second DEL = %q, want %q", got, "ERR|key not found\n")
 	}
 }
 
