@@ -1,6 +1,7 @@
 package main
 
 import (
+	"slices"
 	"sync"
 )
 
@@ -28,10 +29,13 @@ func (sm *SafeMap) Get(key string) (string, bool) {
 	return val, ok
 }
 
-func (sm *SafeMap) Delete(key string) {
+// Delete removes key and reports whether it was present.
+func (sm *SafeMap) Delete(key string) bool {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
+	_, ok := sm.m[key]
 	delete(sm.m, key)
+	return ok
 }
 
 func (sm *SafeMap) List() []string {
@@ -44,6 +48,6 @@ func (sm *SafeMap) List() []string {
 		keyStore = append(keyStore, key)
 	}
 
+	slices.Sort(keyStore)
 	return keyStore
-
 }

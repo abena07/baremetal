@@ -8,8 +8,9 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"strings"
 )
+
+const maxLineSize = 1024 * 1024
 
 func handleConn(conn net.Conn, store *SafeMap) {
 	addr := conn.RemoteAddr().String()
@@ -19,6 +20,7 @@ func handleConn(conn net.Conn, store *SafeMap) {
 	defer conn.Close()
 
 	scanner := bufio.NewScanner(conn)
+	scanner.Buffer(make([]byte, 0, 4096), maxLineSize)
 	for scanner.Scan() {
 		req, err := ParseRequest(scanner.Text())
 		if err != nil {
@@ -26,29 +28,11 @@ func handleConn(conn net.Conn, store *SafeMap) {
 			continue
 		}
 
-		switch req.Command {
-		case "PING":
-			WriteOK(conn, "PONG")
-		case "SET":
-			store.Set(req.Args[0], req.Args[1])
-			WriteOK(conn, "")
-		case "GET":
-			val, ok := store.Get(req.Args[0])
-			if !ok {
-				WriteErr(conn, "key not found")
-			} else {
-				WriteOK(conn, val)
-			}
-		case "DEL":
-			_, ok := store.Get(req.Args[0])
-			if !ok {
-				WriteErr(conn, "key not found")
-			} else {
-				store.Delete(req.Args[0])
-				WriteOK(conn, "")
-			}
-		case "LIST":
-			WriteOK(conn, strings.Join(store.List(), "|"))
+		result, err := commands[req.Command].Handler(store, req.Args)
+		if err != nil {
+			WriteErr(conn, err.Error())
+		} else {
+			WriteOK(conn, result)
 		}
 	}
 

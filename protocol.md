@@ -7,6 +7,7 @@ clients send one request per line. server replies with one line per request.
 
 fields are separated by `|`. messages are terminated by `\n`.
 `\r\n` is also accepted on input but responses always use `\n`.
+a request line may be at most 1 MiB; longer lines close the connection with an error.
 
 ## request
 
@@ -16,7 +17,11 @@ COMMAND|arg1|arg2\n
 
 - COMMAND is uppercase ASCII
 - args are positional and command-specific
-- `|` is a reserved delimiter and may not appear in values
+- the first arg of every command that takes args is a key. keys are trimmed of
+  surrounding whitespace, must be non-empty, and may not contain `|`
+- values (the last arg of SET) are stored byte-for-byte: whitespace is kept, an
+  empty value is allowed, and `|` is allowed since everything after the key's
+  delimiter is the value
 
 ## response
 
@@ -33,6 +38,7 @@ ERR|message\n
 | SET     | key, value | OK\|                      |
 | GET     | key        | OK\|value                 |
 | DEL     | key        | OK\|                      |
+| LIST    | none       | OK\|key1\|key2 (sorted)   |
 
 
 ## edge cases
@@ -43,4 +49,5 @@ ERR|message\n
 | unknown command    | ERR\|unknown command: "FOO"               |
 | missing args       | ERR\|SET requires exactly 2 arguments     |
 | too many args      | ERR\|PING requires 0 arguments            |
-| pipe in value      | ERR\|invalid character in value           |
+| empty key          | ERR\|key must not be empty                |
+| missing key        | ERR\|key not found                        |

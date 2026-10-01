@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"slices"
 	"testing"
 )
 
@@ -16,6 +17,10 @@ func TestParseRequest_ValidCommands(t *testing.T) {
 		{"DEL|key", "DEL", []string{"key"}},
 		{"PING", "PING", []string{}},
 		{"LIST", "LIST", []string{}},
+		{"SET|key|a|b|c", "SET", []string{"key", "a|b|c"}},
+		{"SET|key|", "SET", []string{"key", ""}},
+		{"SET| key |  padded  ", "SET", []string{"key", "  padded  "}},
+		{"GET|key\r", "GET", []string{"key"}},
 	}
 
 	for _, tt := range tests {
@@ -27,7 +32,7 @@ func TestParseRequest_ValidCommands(t *testing.T) {
 		if req.Command != tt.command {
 			t.Errorf("ParseRequest(%q) command = %q, want %q", tt.input, req.Command, tt.command)
 		}
-		if len(req.Args) != len(tt.args) {
+		if !slices.Equal(req.Args, tt.args) {
 			t.Errorf("ParseRequest(%q) args = %v, want %v", tt.input, req.Args, tt.args)
 		}
 	}
@@ -46,7 +51,10 @@ func TestParseRequest_Errors(t *testing.T) {
 		{"GET|key|extra", "GET too many args"},
 		{"PING|extra", "PING with args"},
 		{"LIST|extra", "LIST with args"},
-		{"SET|key|val|extra|extra2", "too many pipes"},
+		{"SET||value", "SET empty key"},
+		{"GET| ", "GET blank key"},
+		{"PING|", "PING with empty arg"},
+		{"   ", "blank line"},
 	}
 
 	for _, tt := range tests {

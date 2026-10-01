@@ -1,6 +1,7 @@
 package main
 
 import (
+	"slices"
 	"sync"
 	"testing"
 )
@@ -25,20 +26,24 @@ func TestSafeMap_GetMissingKey(t *testing.T) {
 func TestSafeMap_Delete(t *testing.T) {
 	sm := NewSafeMap()
 	sm.Set("key", "val")
-	sm.Delete("key")
-	_, ok := sm.Get("key")
-	if ok {
+	if !sm.Delete("key") {
+		t.Error("Delete(\"key\") = false, want true")
+	}
+	if _, ok := sm.Get("key"); ok {
 		t.Error("key still exists after Delete")
+	}
+	if sm.Delete("key") {
+		t.Error("second Delete(\"key\") = true, want false")
 	}
 }
 
 func TestSafeMap_List(t *testing.T) {
 	sm := NewSafeMap()
-	sm.Set("a", "1")
 	sm.Set("b", "2")
+	sm.Set("a", "1")
 	keys := sm.List()
-	if len(keys) != 2 {
-		t.Errorf("List() returned %d keys, want 2", len(keys))
+	if !slices.Equal(keys, []string{"a", "b"}) {
+		t.Errorf("List() = %v, want [a b]", keys)
 	}
 }
 
